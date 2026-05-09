@@ -4,7 +4,6 @@
  */
 import java.util.HashSet;
 import java.util.Set;
-import java.util.Map;
 
 /**
  * Searching similar objects. Objects should be represented as a mapping from
@@ -35,12 +34,26 @@ public abstract class SimilaritySearcher<T> {
      */
     // THIS METHOD IS REQUIRED
     public double jaccardSimilarity(T set1, T set2) {
-        /*
-        //\begin{stub}
-        // TODO: Implement Jaccard similarity for your chosen type T
-        return 0;
-        //\end{stub}
-        */
-    }
+        HashSet<Integer> s1 = (HashSet<Integer>) set1;
+        HashSet<Integer> s2 = (HashSet<Integer>) set2;
 
+        if (s1.isEmpty() && s2.isEmpty()) {
+            return 1.00;
+        }
+        if (s1.isEmpty() || s2.isEmpty()) {
+            return 0.00;
+        }
+
+        HashSet<Integer> larger = s1.size() >= s2.size() ? s1 : s2;
+        HashSet<Integer> smaller = s1.size() >= s2.size() ? s2 : s1;
+
+        int intersectionSize = 0;
+        for(int shingle: smaller) {
+            if (larger.contains(shingle))
+                intersectionSize++;
+        }
+
+        int unionSize = s1.size() + s2.size() - intersectionSize;
+        return (double) intersectionSize / unionSize;
+    }
 }

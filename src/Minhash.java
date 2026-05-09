@@ -2,8 +2,9 @@
  * Copyright (c) DTAI - KU Leuven – All rights reserved. Proprietary, do not
  * copy or distribute without permission. Written by Pieter Robberechts, 2026
  */
-import java.util.Random;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Random;
 
 /**
  * Class for computing MinHash signatures.
@@ -24,15 +25,20 @@ public final class Minhash {
 
         // THIS METHOD IS REQUIRED
         public HashParameters(int numHashes, int numValues, int seed) {
-            /*
             //\begin{stub}
             // TODO: Initialize parameters for universal hashing
             this.numValues = numValues;
-            this.prime = 0;
-            this.a = null;
-            this.b = null;
+            this.prime = Primes.findLeastPrimeNumber(numValues + 1);
+
+            Random rng = new Random(seed);
+            this.a = new int[numHashes];
+            this.b = new int[numHashes];
+
+            for (int i = 0; i < numHashes; i++) {
+                this.a[i] = rng.nextInt(prime - 1) + 1; // in [1, prime-1], never 0
+                this.b[i] = rng.nextInt(prime);           // in [0, prime-1]
+            }
             //\end{stub}
-            */
         }
     }
 
@@ -57,10 +63,43 @@ public final class Minhash {
      */
     // THIS METHOD IS REQUIRED
     public static <T, S> MinhashResult<S> constructSignatureMatrix(Reader<T> reader, HashParameters params, int numHashes) {
-        /*
+        int maxDocs = reader.getMaxDocs();
+
+        int[][] signatureMatrix = new int[numHashes][maxDocs];
+        for (int i = 0; i < numHashes; i++) {
+            Arrays.fill(signatureMatrix[i], Integer.MAX_VALUE);
+        }
+
+        reader.reset();
+        int docIndex = 0;
+        HashSet<Integer> shingleSet;
+        T doc;
+
+        while ((doc = reader.next()) != null) {
+            shingleSet = (HashSet<Integer>) doc;
+
+            for (int shingle : shingleSet) {
+                for (int hashIndex = 0; hashIndex < numHashes; hashIndex++) {
+                    int hashValue = (int)(((long)params.a[hashIndex] * shingle + params.b[hashIndex]) % params.prime) % params.numValues;
+                    
+                    if (hashValue < 0) {
+                        hashValue += params.numValues; // Ensure non-negative
+                    }
+                    
+                    if (hashValue < signatureMatrix[hashIndex][docIndex]) {
+                        signatureMatrix[hashIndex][docIndex] = hashValue;
+                    }
+                }
+            }
+
+            docIndex++;
+        }
+
+        return new MinhashResult<>((S) signatureMatrix, docIndex);
+
         //\begin{stub}
-        return null; 
+        // TODO: Construct the signature matrix using on-the-fly hashing
+        // return null; 
         //\end{stub}
-        */
     }
 }

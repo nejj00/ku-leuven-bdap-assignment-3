@@ -4,7 +4,9 @@
  */
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * A Shingler constructs the word-level shingle representations of documents.
@@ -92,12 +94,18 @@ public class Shingler<T> {
             }
         }
 
-        /*
+        // HashSet<Integer> shingles = new HashSet<>();
+        // for (int hash : shingleHashes) {
+        //     shingles.add(hash);
+        // }
+        // return (T) shingles;
+
         //\begin{stub}
         // TODO: Return the shingles in your chosen data structure T.
-        return null;
+        HashSet<Integer> shingleHashSet = Arrays.stream(shingleHashes).boxed().collect(Collectors.toCollection(HashSet::new));
+
+        return (T) shingleHashSet;
         //\end{stub}
-        */
     }
 
     private String clean(String s) {

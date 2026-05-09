@@ -1,14 +1,15 @@
+
 /**
  * Copyright (c) DTAI - KU Leuven – All rights reserved. Proprietary, do not
  * copy or distribute without permission. Written by Pieter Robberechts, 2026
  */
 
 import java.util.*;
-import java.io.*;
 
 /**
  * Implementation of minhash and locality sensitive hashing (LSH) to find
  * similar objects.
+ * 
  * @param <T> the type used to represent the shingle set of a document
  * @param <S> the type used to represent the signature matrix
  */
@@ -21,7 +22,7 @@ public class LSH<T, S> extends SimilaritySearcher<T> {
     S signatureMatrix = null;
     int numDocs;
 
-    public LSH(Reader<T> reader, int numHashes, int numBands, int numBuckets, int seed){
+    public LSH(Reader<T> reader, int numHashes, int numBands, int numBuckets, int seed) {
         super(reader);
         this.numHashes = numHashes;
         this.numBands = numBands;
@@ -30,21 +31,71 @@ public class LSH<T, S> extends SimilaritySearcher<T> {
     }
 
     // THIS METHOD IS REQUIRED
-    public Set<SimilarPair> lsh(S signatureMatrix, int numDocs, int numBands, int numBuckets, int seed, double threshold) {
-        /*
-        //\begin{stub}
-        return null;
-        //\end{stub}
-        */
+    public Set<SimilarPair> lsh(S signatureMatrix, int numDocs, int numBands, int numBuckets, int seed,
+            double threshold) {
+        int[][] sigMatrix = (int[][]) signatureMatrix;
+        int rowsPerBand = numHashes / numBands;
+        Set<SimilarPair> allCandidates = new HashSet<>();
+
+        for (int band = 0; band < numBands; band++) {
+            int bandStart = band * rowsPerBand;
+            int bandEnd = bandStart + rowsPerBand;
+
+            // Build buckets for this band: bucketId -> list of doc indices
+            Map<Integer, List<Integer>> curBand = new HashMap<>();
+
+            for (int doc = 0; doc < numDocs; doc++) {
+                // Hash the band vector for this document into a bucket
+                int bucketHash = 1;
+                for (int row = bandStart; row < bandEnd; row++) {
+                    bucketHash = 31 * bucketHash + sigMatrix[row][doc];
+                }
+                bucketHash = Math.abs(bucketHash) % numBuckets;
+
+                curBand.computeIfAbsent(bucketHash, k -> new ArrayList<>()).add(doc);
+            }
+
+            // Find similar pairs within each bucket
+            allCandidates.addAll(getSimilarPairsAboveThresholdForBand(signatureMatrix, threshold, curBand));
+        }
+        return allCandidates;
     }
 
     // THIS METHOD IS REQUIRED
-    public Set<SimilarPair> getSimilarPairsAboveThresholdForBand(S signatureMatrix, double threshold, Map<Integer, List<Integer>> curBand){
-        /*
-        //\begin{stub}
-        return null;
-        //\end{stub}
-        */
+    public Set<SimilarPair> getSimilarPairsAboveThresholdForBand(S signatureMatrix, double threshold,
+            Map<Integer, List<Integer>> curBand) {
+        Set<SimilarPair> candidates = new HashSet<>();
+        int[][] sigMatrix = (int[][]) signatureMatrix;
+
+        // For each bucket, check all pairs of documents that landed in it
+        for (List<Integer> bucket : curBand.values()) {
+            if (bucket.size() < 2)
+                continue;
+
+            // Check all pairs within this bucket
+            for (int i = 0; i < bucket.size(); i++) {
+                for (int j = i + 1; j < bucket.size(); j++) {
+                    int doc1 = bucket.get(i);
+                    int doc2 = bucket.get(j);
+
+                    // Estimate similarity using the full signature matrix
+                    int matches = 0;
+                    for (int row = 0; row < numHashes; row++) {
+                        if (sigMatrix[row][doc1] == sigMatrix[row][doc2]) {
+                            matches++;
+                        }
+                    }
+                    double sim = (double) matches / numHashes;
+
+                    if (sim >= threshold) {
+                        String id1 = reader.getExternalId(doc1);
+                        String id2 = reader.getExternalId(doc2);
+                        candidates.add(new SimilarPair(id1, id2, sim));
+                    }
+                }
+            }
+        }
+        return candidates;
     }
 
     // THIS METHOD IS REQUIRED
@@ -53,7 +104,7 @@ public class LSH<T, S> extends SimilaritySearcher<T> {
         long startTime = System.currentTimeMillis();
         System.out.println("Initializing hash parameters ... ");
         Minhash.HashParameters params = new Minhash.HashParameters(numHashes, reader.getNumShingles(), seed);
-        System.out.println("done! Took " +  (System.currentTimeMillis() - startTime)/1000.0 + " seconds.");
+        System.out.println("done! Took " + (System.currentTimeMillis() - startTime) / 1000.0 + " seconds.");
         System.out.println("--------------");
 
         startTime = System.currentTimeMillis();
@@ -61,13 +112,14 @@ public class LSH<T, S> extends SimilaritySearcher<T> {
         Minhash.MinhashResult<S> result = Minhash.constructSignatureMatrix(reader, params, numHashes);
         this.signatureMatrix = result.signatureMatrix;
         this.numDocs = result.numDocs;
-        System.out.println("done! Took " +  (System.currentTimeMillis() - startTime)/1000.0 + " seconds.");
+        System.out.println("done! Took " + (System.currentTimeMillis() - startTime) / 1000.0 + " seconds.");
         System.out.println("--------------");
 
         startTime = System.currentTimeMillis();
         System.out.println("Creating lsh buckets ... ");
-        Set<SimilarPair> similarPairsAboveThreshold = lsh(signatureMatrix, numDocs, numBands, numBuckets, seed, threshold);
-        System.out.println("done! Took " +  (System.currentTimeMillis() - startTime)/1000.0 + " seconds.");
+        Set<SimilarPair> similarPairsAboveThreshold = lsh(signatureMatrix, numDocs, numBands, numBuckets, seed,
+                threshold);
+        System.out.println("done! Took " + (System.currentTimeMillis() - startTime) / 1000.0 + " seconds.");
         System.out.println("--------------");
 
         return similarPairsAboveThreshold;

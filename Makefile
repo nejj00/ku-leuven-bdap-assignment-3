@@ -10,7 +10,8 @@
 # Experiment parameters ######################################################
 
 # Dataset directory
-DATAFOLDER=/cw/bdap/assignment3/
+# DATAFOLDER=/cw/bdap/assignment3/
+DATAFOLDER=/home/neji/ku-leuven-bdap-assignment-3/data
 
 # Ouptut directory
 OUTPUT=output.tsv

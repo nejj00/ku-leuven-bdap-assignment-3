@@ -2,8 +2,8 @@
  * Copyright (c) DTAI - KU Leuven – All rights reserved. Proprietary, do not
  * copy or distribute without permission. Written by Pieter Robberechts, 2026
  */
-import java.util.*;
 import java.io.*;
+import java.util.*;
 
 /**
  * The Runner can be ran from the commandline to find the most similar pairs
@@ -72,21 +72,21 @@ public class Runner {
         // TODO: Replace the generic types below with your chosen data structures.
         // T: Type for a single document's shingle set (e.g., HashSet<Integer>)
         // S: Type for the entire signature matrix (e.g., int[][])
-        // Shingler<HashSet<Integer>> shingler = new Shingler<HashSet<Integer>>(shingleLength, numShingles, seed);
-        // Reader<HashSet<Integer>> reader = new DocumentReader<HashSet<Integer>>(maxDocs, shingler, filesToProcess);
-        // SimilaritySearcher<HashSet<Integer>> searcher = null;
+        Shingler<HashSet<Integer>> shingler = new Shingler<HashSet<Integer>>(shingleLength, numShingles, seed);
+        Reader<HashSet<Integer>> reader = new DocumentReader<HashSet<Integer>>(maxDocs, shingler, filesToProcess);
+        SimilaritySearcher<HashSet<Integer>> searcher = null;
         //\end{stub}
 
         if (method.equals("bf")) {
             //\begin{stub}
-            // searcher = new BruteForceSearch<HashSet<Integer>>(reader);
+            searcher = new BruteForceSearch<HashSet<Integer>>(reader);
             //\end{stub}
         } else if(method.equals("lsh")) {
             if (numHashes == -1 || numBands == -1) {
                 throw new Error("Both -numHashes and -numBands are mandatory arguments for the LSH method");
             }
             //\begin{stub}
-            // searcher = new LSH<HashSet<Integer>, int[][]>(reader, numHashes, numBands, numBuckets, seed);
+            searcher = new LSH<HashSet<Integer>, int[][]>(reader, numHashes, numBands, numBuckets, seed);
             //\end{stub}
         }
 
