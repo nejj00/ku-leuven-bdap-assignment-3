@@ -39,24 +39,26 @@ public class LSH<T, S> extends SimilaritySearcher<T> {
 
         for (int band = 0; band < numBands; band++) {
             int bandStart = band * rowsPerBand;
-            int bandEnd = bandStart + rowsPerBand;
 
             // Build buckets for this band: bucketId -> list of doc indices
             Map<Integer, List<Integer>> curBand = new HashMap<>();
 
             for (int doc = 0; doc < numDocs; doc++) {
                 // Hash the band vector for this document into a bucket
-                int bucketHash = 1;
-                for (int row = bandStart; row < bandEnd; row++) {
-                    bucketHash = 31 * bucketHash + sigMatrix[row][doc];
+                int[] bandVector = new int[rowsPerBand];
+
+                for (int row = 0; row < rowsPerBand; row++) {
+                    bandVector[row] = sigMatrix[bandStart + row][doc];
                 }
-                bucketHash = Math.abs(bucketHash) % numBuckets;
+
+                int bucketHash = Math.floorMod(Arrays.hashCode(bandVector), numBuckets);
 
                 curBand.computeIfAbsent(bucketHash, k -> new ArrayList<>()).add(doc);
             }
 
             // Find similar pairs within each bucket
-            allCandidates.addAll(getSimilarPairsAboveThresholdForBand(signatureMatrix, threshold, curBand));
+            allCandidates.addAll(
+                    getSimilarPairsAboveThresholdForBand(signatureMatrix, threshold, curBand));
         }
         return allCandidates;
     }

@@ -1,3 +1,4 @@
+
 /**
  * Copyright (c) DTAI - KU Leuven – All rights reserved. Proprietary, do not
  * copy or distribute without permission. Written by Pieter Robberechts, 2026
@@ -11,7 +12,7 @@ import java.util.Random;
  */
 public final class Minhash {
 
-    private Minhash(){
+    private Minhash() {
     }
 
     /**
@@ -25,7 +26,7 @@ public final class Minhash {
 
         // THIS METHOD IS REQUIRED
         public HashParameters(int numHashes, int numValues, int seed) {
-            //\begin{stub}
+            // \begin{stub}
             // TODO: Initialize parameters for universal hashing
             this.numValues = numValues;
             this.prime = Primes.findLeastPrimeNumber(numValues + 1);
@@ -36,9 +37,9 @@ public final class Minhash {
 
             for (int i = 0; i < numHashes; i++) {
                 this.a[i] = rng.nextInt(prime - 1) + 1; // in [1, prime-1], never 0
-                this.b[i] = rng.nextInt(prime);           // in [0, prime-1]
+                this.b[i] = rng.nextInt(prime); // in [0, prime-1]
             }
-            //\end{stub}
+            // \end{stub}
         }
     }
 
@@ -54,15 +55,18 @@ public final class Minhash {
 
     /**
      * Construct the signature matrix using on-the-fly hashing.
-     * @param <T> the type used to represent the shingle set of a document
-     * @param <S> the type used to represent the signature matrix
-     * @param reader iterator returning the representation of objects
-     * @param params the hash function parameters (a, b, prime)
+     * 
+     * @param <T>       the type used to represent the shingle set of a document
+     * @param <S>       the type used to represent the signature matrix
+     * @param reader    iterator returning the representation of objects
+     * @param params    the hash function parameters (a, b, prime)
      * @param numHashes number of hashes to use
-     * @return a MinhashResult containing the signature matrix and the number of documents read
+     * @return a MinhashResult containing the signature matrix and the number of
+     *         documents read
      */
     // THIS METHOD IS REQUIRED
-    public static <T, S> MinhashResult<S> constructSignatureMatrix(Reader<T> reader, HashParameters params, int numHashes) {
+    public static <T, S> MinhashResult<S> constructSignatureMatrix(Reader<T> reader, HashParameters params,
+            int numHashes) {
         int maxDocs = reader.getMaxDocs();
 
         int[][] signatureMatrix = new int[numHashes][maxDocs];
@@ -77,15 +81,16 @@ public final class Minhash {
 
         while ((doc = reader.next()) != null) {
             shingleSet = (HashSet<Integer>) doc;
+            // System.out.println("Processing document " + docIndex + " with " +
+            // shingleSet.size() + " shingles.");
+            // System.out.println("Shingle set: " + shingleSet);
 
             for (int shingle : shingleSet) {
                 for (int hashIndex = 0; hashIndex < numHashes; hashIndex++) {
-                    int hashValue = (int)(((long)params.a[hashIndex] * shingle + params.b[hashIndex]) % params.prime) % params.numValues;
-                    
-                    if (hashValue < 0) {
-                        hashValue += params.numValues; // Ensure non-negative
-                    }
-                    
+
+                    int hashValue = (int) (((long) params.a[hashIndex] * shingle + params.b[hashIndex]) % params.prime)
+                            % params.numValues;
+
                     if (hashValue < signatureMatrix[hashIndex][docIndex]) {
                         signatureMatrix[hashIndex][docIndex] = hashValue;
                     }
@@ -97,9 +102,33 @@ public final class Minhash {
 
         return new MinhashResult<>((S) signatureMatrix, docIndex);
 
-        //\begin{stub}
+        // \begin{stub}
         // TODO: Construct the signature matrix using on-the-fly hashing
-        // return null; 
-        //\end{stub}
+        // return null;
+        // \end{stub}
+    }
+
+    public static int[] computeSignature(
+            HashSet<Integer> shingleSet,
+            HashParameters params,
+            int numHashes) {
+
+        int[] signature = new int[numHashes];
+        Arrays.fill(signature, Integer.MAX_VALUE);
+
+        for (int shingle : shingleSet) {
+
+            for (int hashIndex = 0; hashIndex < numHashes; hashIndex++) {
+
+                int hashValue = (int) (((long) params.a[hashIndex] * shingle
+                        + params.b[hashIndex]) % params.prime) % params.numValues;
+
+                if (hashValue < signature[hashIndex]) {
+                    signature[hashIndex] = hashValue;
+                }
+            }
+        }
+
+        return signature;
     }
 }

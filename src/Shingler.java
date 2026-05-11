@@ -3,10 +3,8 @@
  * copy or distribute without permission. Written by Pieter Robberechts, 2026
  */
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * A Shingler constructs the word-level shingle representations of documents.
@@ -94,17 +92,17 @@ public class Shingler<T> {
             }
         }
 
-        // HashSet<Integer> shingles = new HashSet<>();
-        // for (int hash : shingleHashes) {
-        //     shingles.add(hash);
-        // }
-        // return (T) shingles;
+        HashSet<Integer> shingles = new HashSet<>();
+        for (int hash : shingleHashes) {
+            shingles.add(hash);
+        }
+        return (T) shingles;
 
         //\begin{stub}
         // TODO: Return the shingles in your chosen data structure T.
-        HashSet<Integer> shingleHashSet = Arrays.stream(shingleHashes).boxed().collect(Collectors.toCollection(HashSet::new));
+        // HashSet<Integer> shingleHashSet = Arrays.stream(shingleHashes).boxed().collect(Collectors.toCollection(HashSet::new));
 
-        return (T) shingleHashSet;
+        // return (T) shingleHashSet;
         //\end{stub}
     }
 
