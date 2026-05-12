@@ -26,6 +26,9 @@ public abstract class SimilaritySearcher<T> {
     // THIS METHOD IS REQUIRED
     abstract public Set<SimilarPair> getSimilarPairsAboveThreshold(double threshold);
 
+    abstract public void streamSimilarPairsAboveThreshold(double threshold,
+                                                     java.util.function.Consumer<SimilarPair> sink);
+
     /**
      * Jaccard similarity between two sets of type T.
      * @param set1

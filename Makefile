@@ -21,7 +21,7 @@ THRESHOLD=0.8
 # NB_DOCS=8870959
 NB_DOCS=1000000
 SHINGLE_LENGTH=9
-NB_SHINGLES=1000
+NB_SHINGLES=1000000
 NB_HASHES=100
 NB_BANDS=10
 NB_BUCKETS=1000000
@@ -73,7 +73,10 @@ $(class_d)/Minhash.class: $(source_d)/Minhash.java
 $(class_d)/LSH.class: $(source_d)/LSH.java $(class_d)/SimilaritySearcher.class $(class_d)/Primes.class $(class_d)/Minhash.class
 	@$(JAVAC) $(JFLAGS) $<
 
-$(class_d)/Runner.class: $(source_d)/Runner.java $(class_d)/DocumentReader.class $(class_d)/BruteForceSearch.class $(class_d)/LSH.class
+$(class_d)/FastLSH.class: $(source_d)/FastLSH.java $(class_d)/SimilaritySearcher.class $(class_d)/Primes.class $(class_d)/Minhash.class
+	@$(JAVAC) $(JFLAGS) $<
+
+$(class_d)/Runner.class: $(source_d)/Runner.java $(class_d)/DocumentReader.class $(class_d)/BruteForceSearch.class $(class_d)/LSH.class $(class_d)/FastLSH.class
 	@$(JAVAC) $(JFLAGS) $<
 
 # Experiments ################################################################
