@@ -5,11 +5,9 @@
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.InputStreamReader;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.io.InputStreamReader;
 import java.util.List;
-import java.util.Set;
 import java.util.zip.GZIPInputStream;
 
 /**
@@ -19,7 +17,7 @@ import java.util.zip.GZIPInputStream;
  */
 public class DocumentReader<T> extends Reader<T> {
 
-    private List<File> files;
+    private final List<File> files;
     private int currentFileIndex;
     private BufferedReader br;
 

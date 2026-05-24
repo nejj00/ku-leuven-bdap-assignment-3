@@ -28,7 +28,6 @@ public final class Minhash {
         // THIS METHOD IS REQUIRED
         public HashParameters(int numHashes, int numValues, int seed) {
             // \begin{stub}
-            // TODO: Initialize parameters for universal hashing
             this.numValues = numValues;
             this.prime = Primes.findLeastPrimeNumber(numValues + 1);
 
@@ -37,8 +36,8 @@ public final class Minhash {
             this.b = new int[numHashes];
 
             for (int i = 0; i < numHashes; i++) {
-                this.a[i] = rng.nextInt(prime - 1) + 1; // in [1, prime-1], never 0
-                this.b[i] = rng.nextInt(prime); // in [0, prime-1]
+                this.a[i] = rng.nextInt(prime - 1) + 1;
+                this.b[i] = rng.nextInt(prime);
             }
             // \end{stub}
         }
@@ -101,10 +100,9 @@ public final class Minhash {
             docIndex++;
         }
 
-        return new MinhashResult<>((S) signatureMatrix, docIndex);
 
         // \begin{stub}
-        // TODO: Construct the signature matrix using on-the-fly hashing
+        return new MinhashResult<>((S) signatureMatrix, docIndex);
         // return null;
         // \end{stub}
     }

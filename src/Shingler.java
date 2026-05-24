@@ -1,3 +1,4 @@
+
 /**
  * Copyright (c) DTAI - KU Leuven – All rights reserved. Proprietary, do not
  * copy or distribute without permission. Written by Pieter Robberechts, 2026
@@ -8,13 +9,14 @@ import java.util.List;
 
 /**
  * A Shingler constructs the word-level shingle representations of documents.
+ * 
  * @param <T> the type used to represent the shingle set of a document
  */
 public class Shingler<T> {
 
-    private int k;
-    private int numShingles;
-    private int seed;
+    private final int k;
+    private final int numShingles;
+    private final int seed;
     private static final int MIN_PARAGRAPH_WORDS = 5;
 
     public Shingler(int k, int numShingles, int seed) {
@@ -31,7 +33,8 @@ public class Shingler<T> {
      */
     // THIS METHOD IS REQUIRED
     public T shingle(String doc) {
-        if (doc == null || doc.isEmpty()) return null;
+        if (doc == null || doc.isEmpty())
+            return null;
 
         // 1. Fast split into words while respecting paragraph filtering
         List<String> validWords = new ArrayList<>(2000);
@@ -51,7 +54,7 @@ public class Shingler<T> {
                     }
                 }
                 start = i + 1;
-                
+
                 if (c == '\n') {
                     if (wordsInPara < MIN_PARAGRAPH_WORDS) {
                         // Remove words from the short paragraph
@@ -65,7 +68,8 @@ public class Shingler<T> {
             }
         }
 
-        if (validWords.isEmpty()) return null;
+        if (validWords.isEmpty())
+            return null;
 
         // 2. Pre-hash each word
         int numValidWords = validWords.size();
@@ -80,7 +84,8 @@ public class Shingler<T> {
 
         if (numValidWords < k) {
             int h = seed;
-            for (int wh : wordHashes) h = 31 * h + wh;
+            for (int wh : wordHashes)
+                h = 31 * h + wh;
             shingleHashes[0] = (h & Integer.MAX_VALUE) % numShingles;
         } else {
             for (int i = 0; i < numPossibleShingles; i++) {
@@ -92,18 +97,18 @@ public class Shingler<T> {
             }
         }
 
+        // \begin{stub}
+        // TODO: Return the shingles in your chosen data structure T.
+        // HashSet<Integer> shingleHashSet =
+        // Arrays.stream(shingleHashes).boxed().collect(Collectors.toCollection(HashSet::new));
+        // return (T) shingleHashSet;
+        
         HashSet<Integer> shingles = new HashSet<>();
         for (int hash : shingleHashes) {
             shingles.add(hash);
         }
         return (T) shingles;
-
-        //\begin{stub}
-        // TODO: Return the shingles in your chosen data structure T.
-        // HashSet<Integer> shingleHashSet = Arrays.stream(shingleHashes).boxed().collect(Collectors.toCollection(HashSet::new));
-
-        // return (T) shingleHashSet;
-        //\end{stub}
+        // \end{stub}
     }
 
     private String clean(String s) {

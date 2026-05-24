@@ -87,34 +87,19 @@ public class Runner {
                 throw new Error("Both -numHashes and -numBands are mandatory arguments for the LSH method");
             }
             // \begin{stub}
-            searcher = new FastLSH<HashSet<Integer>, int[][]>(reader, numHashes, numBands, numBuckets, seed);
+            searcher = new LSH<HashSet<Integer>, int[][]>(reader, numHashes, numBands, numBuckets, seed);
             // \end{stub}
         }
 
         long startTime = System.currentTimeMillis();
         System.out.println("Searching items more similar than " + threshold + " ... ");
-        // Set<SimilarPair> similarItems =
-        // searcher.getSimilarPairsAboveThreshold(threshold);
-        // printPairs(similarItems, outputFile);
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter(outputFile))) {
 
-            searcher.streamSimilarPairsAboveThreshold(threshold, p -> {
-                try {
-                    bw.write(p.getId1() + "\t" + p.getId2() + "\t" + p.getSimilarity());
-                    bw.newLine();
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            });
+        printMemory("before full pipeline");
 
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        Set<SimilarPair> similarItems = searcher.getSimilarPairsAboveThreshold(threshold);
+        printPairs(similarItems, outputFile);
 
-        // System.out.println("==== METRICS SUMMARY ====");
-        // System.out.println("BF comparisons: " + Metrics.bfComparisons);
-        // System.out.println("LSH candidate pairs: " + Metrics.lshCandidatePairs);
-        // System.out.println("LSH output pairs: " + Metrics.lshEmittedPairs);
+        printMemory("after full pipeline");
 
         System.out.println("done! Took " + (System.currentTimeMillis() - startTime) / 1000.0 + " seconds.");
         System.out.println("--------------");
@@ -137,5 +122,14 @@ public class Runner {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private static void printMemory(String label) {
+        Runtime rt = Runtime.getRuntime();
+
+        long used = rt.totalMemory() - rt.freeMemory();
+        double usedMB = used / (1024.0 * 1024.0);
+
+        System.out.printf("[MEM] %s: %.2f MB%n", label, usedMB);
     }
 }

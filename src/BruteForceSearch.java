@@ -4,7 +4,6 @@
  * copy or distribute without permission. Written by Pieter Robberechts, 2026
  */
 import java.util.*;
-import java.util.function.Consumer;
 
 /**
  * Brute force implementation of the similarity searcher. The Jaccard
@@ -54,31 +53,4 @@ public class BruteForceSearch<T> extends SimilaritySearcher<T> {
         }
         return cands;
     }
-
-    @Override
-    public void streamSimilarPairsAboveThreshold(double threshold, Consumer<SimilarPair> sink) {
-
-        System.out.println("Reading and shingling documents...");
-        List<T> docToShingle = reader.readAll();
-
-        System.out.println("Computing similarities...");
-
-        int n = docToShingle.size();
-
-        for (int obj1 = 0; obj1 < n; obj1++) {
-            String id1 = reader.getExternalId(obj1);
-
-            for (int obj2 = 0; obj2 < obj1; obj2++) {
-                String id2 = reader.getExternalId(obj2);
-
-                double sim = jaccardSimilarity(docToShingle.get(obj1),
-                        docToShingle.get(obj2));
-
-                if (sim > threshold) {
-                    sink.accept(new SimilarPair(id2, id1, sim));
-                }
-            }
-        }
-    }
-
 }

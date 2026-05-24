@@ -57,13 +57,22 @@ public class FastLSH<T, S> extends SimilaritySearcher<T> {
 
             for (int doc = 0; doc < numDocs; doc++) {
                 // Hash the band vector for this document into a bucket
-                int[] bandVector = new int[rowsPerBand];
+                // int[] bandVector = new int[rowsPerBand];
+
+                // for (int row = 0; row < rowsPerBand; row++) {
+                // bandVector[row] = sigMatrix[bandStart + row][doc];
+                // }
+
+                // int bucketHash = Math.floorMod(Arrays.hashCode(bandVector), numBuckets);
+
+                int hash = 1;
 
                 for (int row = 0; row < rowsPerBand; row++) {
-                    bandVector[row] = sigMatrix[bandStart + row][doc];
+                    hash = 31 * hash + sigMatrix[bandStart + row][doc];
                 }
 
-                int bucketHash = Math.floorMod(Arrays.hashCode(bandVector), numBuckets);
+                int bucketHash = Math.floorMod(hash, numBuckets);
+                // int bucketHash = Math.floorMod(hash, numBuckets);
 
                 curBand.computeIfAbsent(bucketHash, k -> new ArrayList<>()).add(doc);
             }
@@ -104,14 +113,12 @@ public class FastLSH<T, S> extends SimilaritySearcher<T> {
             // Check all pairs within this bucket
             for (int i = 0; i < bucket.size(); i++) {
                 for (int j = i + 1; j < bucket.size(); j++) {
-                    int doc1 = bucket.get(i);
-                    int doc2 = bucket.get(j);
+                    // int doc1 = bucket.get(i);
+                    // int doc2 = bucket.get(j);
 
                     candidatePairs++;
 
-                    long key = pairKey(doc1, doc2);
-
-                    if (!seenPairs.add(key)) {
+                    if (!seenPairs.add(pairKey(bucket.get(i), bucket.get(j)))) {
                         duplicatePairs++;
                         continue;
                     }
@@ -128,7 +135,7 @@ public class FastLSH<T, S> extends SimilaritySearcher<T> {
                     // Estimate similarity using the full signature matrix
                     int matches = 0;
                     for (int row = 0; row < numHashes; row++) {
-                        if (sigMatrix[row][doc1] == sigMatrix[row][doc2]) {
+                        if (sigMatrix[row][bucket.get(i)] == sigMatrix[row][bucket.get(j)]) {
                             matches++;
                         }
                     }
@@ -137,8 +144,8 @@ public class FastLSH<T, S> extends SimilaritySearcher<T> {
                     if (sim >= threshold) {
                         emittedPairs++;
                         sink.accept(new SimilarPair(
-                                reader.getExternalId(doc1),
-                                reader.getExternalId(doc2),
+                                reader.getExternalId(bucket.get(i)),
+                                reader.getExternalId(bucket.get(j)),
                                 sim));
                     }
                 }
@@ -165,16 +172,21 @@ public class FastLSH<T, S> extends SimilaritySearcher<T> {
 
     @Override
     public void streamSimilarPairsAboveThreshold(double threshold, Consumer<SimilarPair> sink) {
+
+        printMemory("before signature initialization"); 
         long startTime = System.currentTimeMillis();
         System.out.println("Initializing hash parameters ... ");
         Minhash.HashParameters params = new Minhash.HashParameters(numHashes, reader.getNumShingles(), seed);
         System.out.println("done! Took " + (System.currentTimeMillis() - startTime) / 1000.0 + " seconds.");
         System.out.println("--------------");
+        printMemory("after signature initialization");
 
+        printMemory("before signature matrix construction");
         startTime = System.currentTimeMillis();
         System.out.println("Constructing the signature matrix ... ");
         Minhash.MinhashResult<S> result = Minhash.constructSignatureMatrix(reader,
                 params, numHashes);
+            
         // System.out.println("Reading documents into memory ... ");
         // this.documents = reader.readAll();
 
@@ -185,18 +197,17 @@ public class FastLSH<T, S> extends SimilaritySearcher<T> {
         this.signatureMatrix = result.signatureMatrix;
         this.numDocs = result.numDocs;
 
-        double mb_simpler = (4.0 * numHashes * numDocs) / (1024 * 1024);
-        System.out.println("Raw data only ~ " + mb_simpler + " MB");
-
         System.out.println("done! Took " + (System.currentTimeMillis() - startTime) / 1000.0 + " seconds.");
         System.out.println("--------------");
+        printMemory("after signature matrix construction");
 
+        printMemory("before lsh stream");
         startTime = System.currentTimeMillis();
         System.out.println("Creating lsh buckets ... ");
         lsh_stream(signatureMatrix, numDocs, numBands, numBuckets, seed, threshold, sink);
+        printMemory("after lsh stream");
 
         System.out.println("===== LSH STATS =====");
-
         System.out.println("Candidate pairs: " + candidatePairs);
         System.out.println("Duplicate candidates: " + duplicatePairs);
         System.out.println("Output pairs: " + emittedPairs);
@@ -219,5 +230,14 @@ public class FastLSH<T, S> extends SimilaritySearcher<T> {
     public Set<SimilarPair> getSimilarPairsAboveThreshold(double threshold) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'getSimilarPairsAboveThreshold'");
+    }
+
+    private static void printMemory(String label) {
+        Runtime rt = Runtime.getRuntime();
+
+        long used = rt.totalMemory() - rt.freeMemory();
+        double usedMB = used / (1024.0 * 1024.0);
+
+        System.out.printf("[MEM] %s: %.2f MB%n", label, usedMB);
     }
 }

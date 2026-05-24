@@ -21,12 +21,20 @@ THRESHOLD=0.8
 # NB_DOCS=8870959
 NB_DOCS=1000000
 SHINGLE_LENGTH=9
-NB_SHINGLES=1000000
-NB_HASHES=100
-NB_BANDS=10
-NB_BUCKETS=1000000
+# NB_SHINGLES=1000000
+NB_SHINGLES=30000
+NB_HASHES=200
+NB_BANDS=20
+# NB_BUCKETS=1000000
+NB_BUCKETS=2147483647
+NB_DOCS_SMALL = 15000
 
+NB_DOCS_SMALL_K := $(shell echo $$(($(NB_DOCS_SMALL)/1000)))
+NB_SHINGLES_K := $(shell echo $$(($(NB_SHINGLES)/1000)))
 
+# Output file
+OUTPUT_BF=output_bf_$(NB_DOCS_SMALL_K)kDocs_$(NB_SHINGLES_K)kShingles.tsv
+OUTPUT_LSH=output_lsh_$(NB_DOCS_SMALL_K)kDocs_$(NB_SHINGLES_K)kShingles_$(NB_HASHES)Hashes_$(NB_BANDS)Bands_$(NB_BUCKETS)Buckets.tsv
 
 # Compilation  ###############################################################
 
@@ -73,10 +81,7 @@ $(class_d)/Minhash.class: $(source_d)/Minhash.java
 $(class_d)/LSH.class: $(source_d)/LSH.java $(class_d)/SimilaritySearcher.class $(class_d)/Primes.class $(class_d)/Minhash.class
 	@$(JAVAC) $(JFLAGS) $<
 
-$(class_d)/FastLSH.class: $(source_d)/FastLSH.java $(class_d)/SimilaritySearcher.class $(class_d)/Primes.class $(class_d)/Minhash.class
-	@$(JAVAC) $(JFLAGS) $<
-
-$(class_d)/Runner.class: $(source_d)/Runner.java $(class_d)/DocumentReader.class $(class_d)/BruteForceSearch.class $(class_d)/LSH.class $(class_d)/FastLSH.class
+$(class_d)/Runner.class: $(source_d)/Runner.java $(class_d)/DocumentReader.class $(class_d)/BruteForceSearch.class $(class_d)/LSH.class
 	@$(JAVAC) $(JFLAGS) $<
 
 # Experiments ################################################################
@@ -85,9 +90,9 @@ bf_small: $(class_d)/Runner.class
 	@echo "Testing BF on subset of data"
 	time java -cp .:$(class_d) -Xmx2g Runner \
 		-method bf \
-		-maxDocs 5000 \
+		-maxDocs ${NB_DOCS_SMALL} \
 		-dataFile ${DATAFOLDER} \
-		-outputFile ${OUTPUT} \
+		-outputFile ${OUTPUT_BF} \
 		-threshold ${THRESHOLD} \
 		-shingleLength ${SHINGLE_LENGTH} \
 		-numShingles ${NB_SHINGLES}
@@ -96,9 +101,9 @@ lsh_small: $(class_d)/Runner.class
 	@echo "Testing LSH on subset of data"
 	time java -cp .:$(class_d) -Xmx2g Runner \
 		-method lsh \
-		-maxDocs 100000 \
+		-maxDocs ${NB_DOCS_SMALL} \
 		-dataFile ${DATAFOLDER} \
-		-outputFile ${OUTPUT} \
+		-outputFile ${OUTPUT_LSH} \
 		-threshold ${THRESHOLD} \
 		-shingleLength ${SHINGLE_LENGTH} \
 		-numShingles ${NB_SHINGLES} \
