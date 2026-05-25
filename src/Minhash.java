@@ -5,7 +5,6 @@
  */
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Random;
 
 /**
@@ -100,45 +99,9 @@ public final class Minhash {
             docIndex++;
         }
 
-
         // \begin{stub}
         return new MinhashResult<>((S) signatureMatrix, docIndex);
         // return null;
         // \end{stub}
-    }
-
-    public static <T, S> MinhashResult<S> constructSignatureMatrixFromList(
-            List<T> documents,
-            HashParameters params,
-            int numHashes) {
-
-        int numDocs = documents.size();
-
-        int[][] signatureMatrix = new int[numHashes][numDocs];
-
-        for (int i = 0; i < numHashes; i++) {
-            Arrays.fill(signatureMatrix[i], Integer.MAX_VALUE);
-        }
-
-        for (int docIndex = 0; docIndex < numDocs; docIndex++) {
-
-            HashSet<Integer> shingleSet = (HashSet<Integer>) documents.get(docIndex);
-
-            for (int shingle : shingleSet) {
-
-                for (int hashIndex = 0; hashIndex < numHashes; hashIndex++) {
-
-                    int hashValue = (int) (((long) params.a[hashIndex] * shingle
-                            + params.b[hashIndex]) % params.prime)
-                            % params.numValues;
-
-                    if (hashValue < signatureMatrix[hashIndex][docIndex]) {
-                        signatureMatrix[hashIndex][docIndex] = hashValue;
-                    }
-                }
-            }
-        }
-
-        return new MinhashResult<>((S) signatureMatrix, numDocs);
     }
 }

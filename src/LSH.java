@@ -31,8 +31,7 @@ public class LSH<T, S> extends SimilaritySearcher<T> {
     }
 
     // THIS METHOD IS REQUIRED
-    public Set<SimilarPair> lsh(S signatureMatrix, int numDocs, int numBands, int numBuckets, int seed,
-            double threshold) {
+    public Set<SimilarPair> lsh(S signatureMatrix, int numDocs, int numBands, int numBuckets, int seed, double threshold) {
         int[][] sigMatrix = (int[][]) signatureMatrix;
         int rowsPerBand = numHashes / numBands;
         Set<SimilarPair> allCandidates = new HashSet<>();
@@ -62,9 +61,8 @@ public class LSH<T, S> extends SimilaritySearcher<T> {
         return allCandidates;
     }
 
-    // THIS METHOD IS REQUIREDst
-    public Set<SimilarPair> getSimilarPairsAboveThresholdForBand(S signatureMatrix, double threshold,
-            Map<Integer, List<Integer>> curBand) {
+    // THIS METHOD IS REQUIRED
+    public Set<SimilarPair> getSimilarPairsAboveThresholdForBand(S signatureMatrix, double threshold, Map<Integer, List<Integer>> curBand) {
         Set<SimilarPair> candidates = new HashSet<>();
         int[][] sigMatrix = (int[][]) signatureMatrix;
 
