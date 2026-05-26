@@ -94,12 +94,8 @@ public class Runner {
         long startTime = System.currentTimeMillis();
         System.out.println("Searching items more similar than " + threshold + " ... ");
 
-        printMemory("before full pipeline");
-
         Set<SimilarPair> similarItems = searcher.getSimilarPairsAboveThreshold(threshold);
         printPairs(similarItems, outputFile);
-
-        printMemory("after full pipeline");
 
         System.out.println("done! Took " + (System.currentTimeMillis() - startTime) / 1000.0 + " seconds.");
         System.out.println("--------------");
@@ -122,14 +118,5 @@ public class Runner {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    private static void printMemory(String label) {
-        Runtime rt = Runtime.getRuntime();
-
-        long used = rt.totalMemory() - rt.freeMemory();
-        double usedMB = used / (1024.0 * 1024.0);
-
-        System.out.printf("[MEM] %s: %.2f MB%n", label, usedMB);
     }
 }
