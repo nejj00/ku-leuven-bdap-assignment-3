@@ -7,7 +7,7 @@ set -e
 # ============================================================================
 
 # Dataset directory
-DATAFOLDER="/home/neji/ku-leuven-bdap-assignment-3/data"
+DATAFOLDER="/cw/bdap/assignment3/"
 
 # Output file
 OUTPUT="output.tsv"
