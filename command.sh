@@ -6,11 +6,14 @@ set -e
 # LSH Full Dataset Runner
 # ============================================================================
 
-# Dataset directory
-DATAFOLDER="/cw/bdap/assignment3/"
+# Default values
+# DEFAULT_DATAFOLDER="/home/neji/ku-leuven-bdap-assignment-3/data"
+DEFAULT_DATAFOLDER="/cw/bdap/assignment3/"
+DEFAULT_OUTPUT="output.tsv"
 
-# Output file
-OUTPUT="output.tsv"
+# Parse command line arguments
+DATAFOLDER="${1:-$DEFAULT_DATAFOLDER}"
+OUTPUT="${2:-$DEFAULT_OUTPUT}"
 
 # Experiment parameters
 THRESHOLD=0.8
@@ -19,31 +22,21 @@ SHINGLE_LENGTH=9
 NB_SHINGLES=30000
 NB_HASHES=200
 NB_BANDS=20
-NB_BUCKETS=2147483647
-
-# Java settings
-HEAP_SIZE="2g"
-
-# Directories
-CLASS_DIR="bin"
-
-echo "============================================================"
-echo "Cleaning and building project"
-echo "============================================================"
-
-make clean
-make
+NB_BUCKETS=1000000
 
 echo "============================================================"
 echo "Running LSH on full dataset"
 echo "============================================================"
 
-time java -cp .:${CLASS_DIR} -Xmx${HEAP_SIZE} Runner \
+echo "Input folder : ${DATAFOLDER}"
+echo "Output file  : ${OUTPUT}"
+
+java Runner \
     -method lsh \
-    -maxDocs ${NB_DOCS} \
     -dataFile ${DATAFOLDER} \
     -outputFile ${OUTPUT} \
     -threshold ${THRESHOLD} \
+    -maxDocs ${NB_DOCS} \
     -shingleLength ${SHINGLE_LENGTH} \
     -numShingles ${NB_SHINGLES} \
     -numHashes ${NB_HASHES} \
