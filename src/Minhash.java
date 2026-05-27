@@ -80,9 +80,6 @@ public final class Minhash {
 
         while ((doc = reader.next()) != null) {
             shingleSet = (HashSet<Integer>) doc;
-            // System.out.println("Processing document " + docIndex + " with " +
-            // shingleSet.size() + " shingles.");
-            // System.out.println("Shingle set: " + shingleSet);
 
             for (int shingle : shingleSet) {
                 for (int hashIndex = 0; hashIndex < numHashes; hashIndex++) {

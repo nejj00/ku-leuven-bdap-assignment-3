@@ -39,7 +39,6 @@ public class LSH<T, S> extends SimilaritySearcher<T> {
         for (int band = 0; band < numBands; band++) {
             int bandStart = band * rowsPerBand;
 
-            // Build buckets for this band: bucketId -> list of doc indices
             Map<Integer, List<Integer>> curBand = new HashMap<>();
 
             for (int doc = 0; doc < numDocs; doc++) {
@@ -66,7 +65,7 @@ public class LSH<T, S> extends SimilaritySearcher<T> {
         Set<SimilarPair> candidates = new HashSet<>();
         int[][] sigMatrix = (int[][]) signatureMatrix;
 
-        // For each bucket, check all pairs of documents that landed in it
+        // For each bucket check all pairs of documents that landed in it
         for (List<Integer> bucket : curBand.values()) {
             if (bucket.size() < 2)
                 continue;
@@ -77,7 +76,6 @@ public class LSH<T, S> extends SimilaritySearcher<T> {
                     int doc1 = bucket.get(i);
                     int doc2 = bucket.get(j);
 
-                    // Estimate similarity using the full signature matrix
                     int matches = 0;
                     for (int row = 0; row < numHashes; row++) {
                         if (sigMatrix[row][doc1] == sigMatrix[row][doc2]) {
